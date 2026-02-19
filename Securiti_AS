@@ -6,55 +6,60 @@ useCaseDiagram
     
     package "Методика автоматизації" {
         usecase "Аналіз вимог безпеки" as UC1
-        usecase "Генерація конфігураційних скриптів" as UC2
-        usecase "Валідація та тестування політик" as UC3
+        usecase "Генерація конфігурацій" as UC2
+        usecase "Валідація (Linting/Unit-tests)" as UC3
         usecase "Розгортання (Enforcement)" as UC4
         usecase "Моніторинг відповідності" as UC5
     }
     
     Admin --> UC1
     Admin --> UC2
-    UC2 --> UC3
+    UC2 ..> UC3 : <<include>>
     UC3 --> UC4
     UC4 --> TargetSystem
     UC5 --> Admin
-    UC5 --> TargetSystem
+    TargetSystem -- UC5
 ```
 ###Діаграма послідовності
 ```
 sequenceDiagram
+    autonumber
     participant Admin as Адміністратор
-    participant AutoTool as Засіб автоматизації (IaC)
-    participant PolicyRepo as Репозиторій політик (GitHub)
+    participant PolicyRepo as GitHub Repo
+    participant AutoTool as CI/CD (Ansible/Terraform)
     participant Node as Вузол АС класу 1
-    participant Auditor as Модуль аудиту
 
-    Admin->>PolicyRepo: Оновлення коду політики (YAML/HCL)
-    PolicyRepo->>AutoTool: Trigger CI/CD Pipeline
-    AutoTool->>AutoTool: Синтаксичний аналіз та перевірка безпеки
-    AutoTool->>Node: Застосування конфігурації (SSH/Agent)
-    Node-->>AutoTool: Підтвердження змін
-    AutoTool->>Auditor: Реєстрація події налаштування
-    Auditor-->>Admin: Звіт про успішне впровадження
+    Admin->>PolicyRepo: Push policy change
+    PolicyRepo->>AutoTool: Webhook trigger
+    AutoTool->>AutoTool: Security Scan & Validation
+    
+    alt Валідація успішна
+        AutoTool->>Node: Apply Configuration
+        Node-->>AutoTool: Success (200 OK)
+        AutoTool-->>Admin: Deployment Successful
+    else Помилка валідації/доступу
+        AutoTool-->>Admin: Error Alert (Rollback)
+    end
 ```
 ###Діаграма станів
 ```
 stateDiagram-v2
-    [*] --> Draft: Створення опису політики
-    Draft --> Validation: Автоматична перевірка (Linting)
-    Validation --> Testing: Тестове середовище (Sandbox)
-    
-    Testing --> Draft: Виявлено помилки
-    Testing --> Deployment: Перевірка пройдена
+    direction LR
+    [*] --> Draft
+    Draft --> Testing: Commit to Dev
+    Testing --> Deployment: Approved
     
     state Deployment {
-        [*] --> Applying
-        Applying --> Active
+        Applying --> Applied
     }
     
-    Active --> Monitoring: Постійний контроль
-    Monitoring --> Alert: Виявлено відхилення
-    Alert --> Active: Автоматичне виправлення (Remediation)
+    Deployment --> Operational
     
-    Active --> [*]: Виведення з експлуатації
+    state Operational {
+        Monitoring --> DriftDetected: Порушення цілісності
+        DriftDetected --> Remediating: Авто-виправлення
+        Remediating --> Monitoring: Відновлено
+    }
+    
+    Operational --> Retired: Архівування
 ```
