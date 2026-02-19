@@ -1,0 +1,60 @@
+##Діаграма прецедентів 
+```
+useCaseDiagram
+    actor "Адміністратор безпеки" as Admin
+    actor "АС Класу 1 (Цільова система)" as TargetSystem
+    
+    package "Методика автоматизації" {
+        usecase "Аналіз вимог безпеки" as UC1
+        usecase "Генерація конфігураційних скриптів" as UC2
+        usecase "Валідація та тестування політик" as UC3
+        usecase "Розгортання (Enforcement)" as UC4
+        usecase "Моніторинг відповідності" as UC5
+    }
+    
+    Admin --> UC1
+    Admin --> UC2
+    UC2 --> UC3
+    UC3 --> UC4
+    UC4 --> TargetSystem
+    UC5 --> Admin
+    UC5 --> TargetSystem
+```
+###Діаграма послідовності
+```
+sequenceDiagram
+    participant Admin as Адміністратор
+    participant AutoTool as Засіб автоматизації (IaC)
+    participant PolicyRepo as Репозиторій політик (GitHub)
+    participant Node as Вузол АС класу 1
+    participant Auditor as Модуль аудиту
+
+    Admin->>PolicyRepo: Оновлення коду політики (YAML/HCL)
+    PolicyRepo->>AutoTool: Trigger CI/CD Pipeline
+    AutoTool->>AutoTool: Синтаксичний аналіз та перевірка безпеки
+    AutoTool->>Node: Застосування конфігурації (SSH/Agent)
+    Node-->>AutoTool: Підтвердження змін
+    AutoTool->>Auditor: Реєстрація події налаштування
+    Auditor-->>Admin: Звіт про успішне впровадження
+```
+###Діаграма станів
+```
+stateDiagram-v2
+    [*] --> Draft: Створення опису політики
+    Draft --> Validation: Автоматична перевірка (Linting)
+    Validation --> Testing: Тестове середовище (Sandbox)
+    
+    Testing --> Draft: Виявлено помилки
+    Testing --> Deployment: Перевірка пройдена
+    
+    state Deployment {
+        [*] --> Applying
+        Applying --> Active
+    }
+    
+    Active --> Monitoring: Постійний контроль
+    Monitoring --> Alert: Виявлено відхилення
+    Alert --> Active: Автоматичне виправлення (Remediation)
+    
+    Active --> [*]: Виведення з експлуатації
+```
