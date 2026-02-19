@@ -1,25 +1,26 @@
 ##Діаграма прецедентів 
 
 ```mermaid
-useCaseDiagram
-    actor "Адміністратор безпеки" as Admin
-    actor "АС Класу 1 (Цільова система)" as TargetSystem
-    
-    package "Методика автоматизації" {
-        usecase "Аналіз вимог безпеки" as UC1
-        usecase "Генерація конфігурацій" as UC2
-        usecase "Валідація (Linting/Unit-tests)" as UC3
-        usecase "Розгортання (Enforcement)" as UC4
-        usecase "Моніторинг відповідності" as UC5
-    }
+flowchart TD
+    subgraph Admin["Адміністратор безпеки"]
+    end
+    subgraph TargetSystem["АС Класу 1 (Цільова система)"]
+    end
+    subgraph Methodology["Методика автоматизації"]
+        UC1["Аналіз вимог безпеки"]
+        UC2["Генерація конфігурацій"]
+        UC3["Валідація (Linting/Unit-tests)"]
+        UC4["Розгортання (Enforcement)"]
+        UC5["Моніторинг відповідності"]
+    end
     
     Admin --> UC1
     Admin --> UC2
-    UC2 ..> UC3 : <<include>>
+    UC2 -.->|include| UC3
     UC3 --> UC4
     UC4 --> TargetSystem
     UC5 --> Admin
-    TargetSystem -- UC5
+    TargetSystem --> UC5
 ```
 ###Діаграма послідовності
 
