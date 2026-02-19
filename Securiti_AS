@@ -1,5 +1,6 @@
 ##Діаграма прецедентів 
-```
+
+```mermaid
 useCaseDiagram
     actor "Адміністратор безпеки" as Admin
     actor "АС Класу 1 (Цільова система)" as TargetSystem
@@ -21,7 +22,8 @@ useCaseDiagram
     TargetSystem -- UC5
 ```
 ###Діаграма послідовності
-```
+
+```mermaid
 sequenceDiagram
     autonumber
     participant Admin as Адміністратор
@@ -42,7 +44,8 @@ sequenceDiagram
     end
 ```
 ###Діаграма станів
-```
+
+```mermaid
 stateDiagram-v2
     direction LR
     [*] --> Draft
